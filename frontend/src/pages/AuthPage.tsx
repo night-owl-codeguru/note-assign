@@ -101,7 +101,7 @@ export default function AuthPage() {
     <PageTransition>
       <div className="relative min-h-screen w-screen">
         {/* Decorative side visual on large screens (no header on this page) */}
-        <div className="hidden lg:block fixed top-0 left-0 h-screen w-[44vw] bg-primary/5 overflow-hidden">
+        <div className="hidden lg:block fixed top-0 left-0 h-screen w-[42vw] bg-primary/5 overflow-hidden">
           <img
             src={side}
             alt="side"
@@ -112,25 +112,25 @@ export default function AuthPage() {
         </div>
 
         {/* Content */}
-        <div className="relative flex min-h-screen items-center justify-center lg:ml-[44vw]">
-          <div className="w-full max-w-md px-4 py-8">
-            <div className="flex items-center mb-2">
-              <img src={logo} alt="Logo" className="h-10" />
-              <span className="text-3xl font-bold ml-2" style={{ color: '#367AFF' }}>HD</span>
+        <div className="relative flex min-h-screen items-center justify-center lg:ml-[42vw]">
+          <div className="w-full max-w-md px-6 sm:px-8 py-8">
+            <div className="flex items-center mb-3">
+              <img src={logo} alt="Logo" className="h-8 sm:h-10" />
+              <span className="text-2xl sm:text-3xl font-bold ml-2" style={{ color: '#367AFF' }}>HD</span>
             </div>
-            <p className="text-gray-600 mb-6">{isLogin ? 'Login' : 'Create your account'}</p>
+            <p className="text-gray-600 mb-6 text-sm sm:text-base">{isLogin ? 'Login' : 'Create your account'}</p>
 
             {!isLogin && (
-              <div className="grid gap-3 mb-3">
+              <div className="grid gap-3 sm:gap-4 mb-4">
                 <input className="input" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
                 <input className="input" type="date" placeholder="Date of birth" value={dob} onChange={(e) => setDob(e.target.value)} />
               </div>
             )}
 
-            <div className="grid gap-3">
+            <div className="grid gap-3 sm:gap-4">
               <input className="input" placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
 
-              <div className="flex items-center gap-3 flex-wrap">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
                 <LoadingButton onClick={onRequestOtp} loading={loadingOtp}>
                   Get OTP
                 </LoadingButton>

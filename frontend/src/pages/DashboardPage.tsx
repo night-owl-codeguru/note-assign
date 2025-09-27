@@ -89,13 +89,13 @@ export default function DashboardPage() {
   return (
     <Layout>
       <PageTransition>
-        <div className="mx-auto w-full max-w-5xl px-6 py-12">
+        <div className="mx-auto w-full max-w-5xl px-4 sm:px-6 py-8 sm:py-12">
           {/* Header Section */}
-          <div className="mb-12">
-            <h1 className="text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-primary via-primary to-blue-600 bg-clip-text text-transparent">
+          <div className="mb-8 sm:mb-12">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-2 bg-gradient-to-r from-primary via-primary to-blue-600 bg-clip-text text-transparent">
               Welcome{user ? `, ${user.name}` : ''}
             </h1>
-            <p className="text-gray-500 text-lg">{user?.email}</p>
+            <p className="text-gray-500 text-base sm:text-lg">{user?.email}</p>
           </div>
 
           {/* Error State */}
@@ -118,27 +118,27 @@ export default function DashboardPage() {
           {user?.verified && (
           <>
             {/* Create Note Section */}
-            <div className="mb-12">
-              <h2 className="text-xl font-semibold mb-4 text-gray-800">Create a new note</h2>
-              <div className="p-6 rounded-2xl border border-gray-200 bg-white/80 shadow-sm">
-                <div className="flex gap-3">
+            <div className="mb-8 sm:mb-12">
+              <h2 className="text-lg sm:text-xl font-semibold mb-4 text-gray-800">Create a new note</h2>
+              <div className="p-4 sm:p-6 rounded-2xl border border-gray-200 bg-white/80 shadow-sm">
+                <div className="flex flex-col sm:flex-row gap-3">
                   <textarea 
-                    className="flex-1 min-h-[80px] resize-none rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-transparent transition-all placeholder:text-gray-400"
+                    className="flex-1 min-h-[80px] sm:min-h-[60px] resize-none rounded-xl border border-gray-300 px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/60 focus:border-transparent transition-all placeholder:text-gray-400"
                     placeholder="What's on your mind?"
                     value={content} 
                     onChange={(e) => setContent(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && e.ctrlKey && !creatingNote && onCreate()}
                   />
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-row sm:flex-col gap-2 justify-between sm:justify-start">
                     <LoadingButton 
                       onClick={onCreate} 
                       loading={creatingNote} 
                       disabled={!content.trim()}
-                      className="px-6"
+                      className="px-6 flex-1 sm:flex-initial"
                     >
                       Create
                     </LoadingButton>
-                    <p className="text-xs text-gray-500 text-center">Ctrl+Enter</p>
+                    <p className="text-xs text-gray-500 self-center sm:text-center hidden sm:block">Ctrl+Enter</p>
                   </div>
                 </div>
               </div>
@@ -152,26 +152,26 @@ export default function DashboardPage() {
               </div>
               
               {notes.length === 0 ? (
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="text-center py-12 sm:py-16">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 mx-auto mb-4 rounded-full bg-gray-100 flex items-center justify-center">
+                    <svg className="w-7 h-7 sm:w-8 sm:h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
                   </div>
-                  <h3 className="text-lg font-medium text-gray-600 mb-2">No notes yet</h3>
-                  <p className="text-gray-500">Create your first note to get started</p>
+                  <h3 className="text-base sm:text-lg font-medium text-gray-600 mb-2">No notes yet</h3>
+                  <p className="text-sm sm:text-base text-gray-500">Create your first note to get started</p>
                 </div>
               ) : (
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
                   {notes.map(n => (
                     <SwipeToDelete key={n._id} onDelete={() => onDelete(n._id)}>
-                      <div className="group relative p-6 rounded-2xl border border-gray-200 bg-white/80 shadow-sm hover:shadow-lg hover:border-gray-300 transition-all duration-200">
-                        <div className="mb-4">
-                          <div className="text-gray-800 leading-relaxed whitespace-pre-wrap break-words">
+                      <div className="group relative p-4 sm:p-6 rounded-2xl border border-gray-200 bg-white/80 shadow-sm hover:shadow-lg hover:border-gray-300 transition-all duration-200">
+                        <div className="mb-3 sm:mb-4">
+                          <div className="text-gray-800 leading-relaxed whitespace-pre-wrap break-words text-sm sm:text-base">
                             {n.content}
                           </div>
                         </div>
-                        <div className="flex justify-end opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex justify-end opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
                           <LoadingButton 
                             onClick={() => onDelete(n._id)} 
                             loading={deletingNotes.has(n._id)}
