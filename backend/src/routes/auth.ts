@@ -52,11 +52,12 @@ router.post('/request-otp', zValidator('json', z.object({
     }
   }
 
+  // Generate a 6-digit numeric OTP
   const code = Math.floor(100000 + Math.random() * 900000).toString();
   const expiresAt = new Date(Date.now() + OTP_TTL_MINUTES * 60 * 1000);
   // Upsert current OTP for the email (optional: you can replace existing)
   await Otp.deleteMany({ email: loweredEmail });
-  await Otp.create({ email: loweredEmail, code, name: name || 'User', dob: dob || 'N/A', expiresAt });
+  await Otp.create({ email: loweredEmail, code, name: name || 'User', dob: dob || 'N/A', expiresAt, attempts: 0, lockedUntil: undefined });
   // Log request (two TTLs possible, but we store a single doc with short TTL per request)
   await OtpRequest.create({ email: loweredEmail, ip, expiresAt: new Date(Date.now() + 2 * 60 * 1000) });
 
@@ -107,22 +108,39 @@ router.post('/request-otp', zValidator('json', z.object({
 
 router.post('/verify-otp', zValidator('json', z.object({
   email: z.string().email(),
-  otp: z.string().length(6),
+  otp: z.string().regex(/^\d{6}$/),
   keepSignedIn: z.boolean().optional(),
 })), async (c) => {
   const { email, otp, keepSignedIn } = c.req.valid('json');
   const loweredEmail = email.toLowerCase();
   const rec = await Otp.findOne({ email: loweredEmail });
   if (!rec) return c.json({ error: 'OTP not requested' }, 400);
+  // Simple lockout after repeated failures
+  const MAX_ATTEMPTS = 5; // OWASP suggests throttling/lockout; keep low for dev
+  const LOCK_MINUTES = 10;
+  if (rec.lockedUntil && rec.lockedUntil.getTime() > Date.now()) {
+    return c.json({ error: 'Too many attempts. Try again later.' }, 429);
+  }
   if (rec.expiresAt.getTime() < Date.now()) return c.json({ error: 'OTP expired' }, 400);
-  if (rec.code !== otp) return c.json({ error: 'Invalid OTP' }, 400);
+  if (rec.code !== otp) {
+    const nextAttempts = (rec.attempts || 0) + 1;
+    const update: any = { attempts: nextAttempts };
+    if (nextAttempts >= MAX_ATTEMPTS) {
+      update.lockedUntil = new Date(Date.now() + LOCK_MINUTES * 60 * 1000);
+    }
+    await Otp.updateOne({ _id: rec._id }, { $set: update });
+    return c.json({ error: 'Invalid OTP' }, 400);
+  }
 
   // Upsert user
   const name = rec.name || 'User';
   const dob = rec.dob || 'N/A';
   let user = await User.findOne({ email: loweredEmail });
   if (!user) {
-    user = await User.create({ email: loweredEmail, name, dob });
+    user = await User.create({ email: loweredEmail, name, dob, verified: true });
+  } else if (!user.verified) {
+    user.verified = true;
+    await user.save();
   }
 
   await Otp.deleteMany({ email: loweredEmail });
@@ -161,9 +179,14 @@ router.post('/google', zValidator('json', z.object({
 
     let user = await User.findOne({ email });
     if (!user) {
-      user = await User.create({ email, name, dob: 'Google', googleId });
-    } else if (!user.googleId) {
+      user = await User.create({ email, name, dob: 'Google', googleId, verified: true });
+    } else {
+      if (!user.googleId) {
       user.googleId = googleId;
+      }
+      if (!user.verified) {
+        user.verified = true;
+      }
       await user.save();
     }
 
@@ -190,9 +213,9 @@ router.get('/me', async (c) => {
   if (!token) return c.json({ error: 'Unauthorized' }, 401);
   const payload = await verifyJwt<{ sub: string }>(token);
   if (!payload?.sub) return c.json({ error: 'Unauthorized' }, 401);
-  const user = await User.findById(payload.sub).select('name email');
+  const user = await User.findById(payload.sub).select('name email verified');
   if (!user) return c.json({ error: 'Unauthorized' }, 401);
-  return c.json({ user: { name: user.name, email: user.email } });
+  return c.json({ user: { name: user.name, email: user.email, verified: user.verified } });
 });
 
 export default router;

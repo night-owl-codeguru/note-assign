@@ -6,6 +6,8 @@ export interface IOtp extends Document {
   name?: string;
   dob?: string;
   expiresAt: Date;
+  attempts?: number;
+  lockedUntil?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -15,6 +17,8 @@ const OtpSchema = new Schema<IOtp>({
   code: { type: String, required: true },
   name: { type: String },
   dob: { type: String },
+  attempts: { type: Number, default: 0 },
+  lockedUntil: { type: Date },
   expiresAt: { type: Date, required: true, index: { expires: 0 } }, // TTL at the time set
 }, { timestamps: true });
 

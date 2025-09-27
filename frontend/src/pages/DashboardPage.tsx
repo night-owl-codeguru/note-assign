@@ -7,7 +7,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 type Note = { _id: string; content: string }
-type User = { name: string; email: string }
+type User = { name: string; email: string; verified?: boolean }
 
 export default function DashboardPage() {
   const [notes, setNotes] = useState<Note[]>([])
@@ -23,6 +23,10 @@ export default function DashboardPage() {
     try {
       const u = await axios.get(`${API}/auth/me`, { withCredentials: true })
       setUser(u.data.user)
+      if (!u.data.user?.verified) {
+        setError('You need to verify your account before accessing the dashboard.')
+        return
+      }
       const { data } = await axios.get(`${API}/notes`, { withCredentials: true })
       setNotes(data.notes)
     } catch (e: any) {
@@ -80,8 +84,21 @@ export default function DashboardPage() {
       <h1 className="text-2xl font-semibold mb-2" style={{ color: '#367AFF' }}>Welcome{user ? `, ${user.name}` : ''}</h1>
       <p className="text-gray-600 mb-4">{user?.email}</p>
 
-      {error && <div className="text-red-600 text-sm mb-3">{error}</div>}
+      {error && (
+        <div className="text-red-600 text-sm mb-3">
+          {error}
+          {!user?.verified && (
+            <div className="mt-2 text-gray-700">
+              Please check your email for the OTP and complete verification on the Auth page.
+              <div className="mt-2">
+                <a href="/" className="text-primary underline">Go to verification</a>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
+      {user?.verified && (
       <div className="flex gap-2 mb-4">
         <input 
           className="input" 
@@ -94,7 +111,9 @@ export default function DashboardPage() {
           Create
         </LoadingButton>
       </div>
+      )}
 
+      {user?.verified && (
       <div className="grid gap-2">
         {notes.map(n => (
           <SwipeToDelete key={n._id} onDelete={() => onDelete(n._id)}>
@@ -112,6 +131,7 @@ export default function DashboardPage() {
           </SwipeToDelete>
         ))}
       </div>
+      )}
     </div>
   )
 }
