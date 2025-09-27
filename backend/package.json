@@ -1,0 +1,27 @@
+{
+  "name": "note-assign-backend",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "bun --hot src/index.ts",
+    "start": "bun src/index.ts",
+    "lint": "echo 'add linter if needed'"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.2.2",
+    "cookie": "^0.6.0",
+    "dotenv": "^16.4.5",
+    "google-auth-library": "^9.14.2",
+    "hono": "^4.5.7",
+    "jose": "^5.9.3",
+    "mongoose": "^8.7.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/cookie": "^0.6.0",
+    "@types/node": "^22.7.5",
+    "bun-types": "^1.1.33"
+  }
+}
+

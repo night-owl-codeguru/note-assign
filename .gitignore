@@ -1,0 +1,8 @@
+# Node/Bun
+node_modules/
+build/
+dist/
+.DS_Store
+.env
+backend/.env
+frontend/.env
