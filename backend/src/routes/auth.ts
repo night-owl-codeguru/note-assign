@@ -218,4 +218,18 @@ router.get('/me', async (c) => {
   return c.json({ user: { name: user.name, email: user.email, verified: user.verified } });
 });
 
+router.post('/logout', async (c) => {
+  const cookieDomain = process.env.COOKIE_DOMAIN || 'localhost';
+  setCookie(c, 'token', '', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    domain: cookieDomain,
+    path: '/',
+    maxAge: 0, // Expire immediately
+    expires: new Date(0), // Set expiry to past date
+  });
+  return c.json({ ok: true, message: 'Logged out successfully' });
+});
+
 export default router;

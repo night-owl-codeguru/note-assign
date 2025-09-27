@@ -1,15 +1,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
 import side from '../../assets/side.png'
 import logo from '../../assets/logo.png'
 import LoadingButton from '../components/LoadingButton'
 import LoadingSpinner from '../components/LoadingSpinner'
 import PageTransition from '../components/PageTransition'
+import { useAuth } from '../hooks/useAuth'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 export default function AuthPage() {
+  const navigate = useNavigate()
+  const { user, loading: authLoading } = useAuth()
   const [isLogin, setIsLogin] = useState(false)
   const [name, setName] = useState('')
   const [dob, setDob] = useState('')
@@ -46,7 +50,7 @@ export default function AuthPage() {
     setLoadingVerify(true)
     try {
       await axios.post(`${API}/auth/verify-otp`, { email, otp, keepSignedIn: keep }, { withCredentials: true })
-      window.location.href = '/dashboard'
+      navigate('/dashboard')
     } catch (e: any) {
       setError(e?.response?.data?.error || 'Failed to verify OTP')
     } finally {
@@ -70,7 +74,7 @@ export default function AuthPage() {
           setLoadingGoogle(true)
           try {
             await axios.post(`${API}/auth/google`, { idToken: res.credential, keepSignedIn: keep }, { withCredentials: true })
-            window.location.href = '/dashboard'
+            navigate('/dashboard')
           } catch (e: any) {
             setError(e?.response?.data?.error || 'Google sign-in failed')
           } finally {
@@ -97,6 +101,22 @@ export default function AuthPage() {
     }
   }, [keep])
 
+  // Show loading while checking auth status
+  if (authLoading) {
+    return (
+      <PageTransition>
+        <div className="min-h-screen flex items-center justify-center">
+          <LoadingSpinner size="lg" color="primary" />
+        </div>
+      </PageTransition>
+    )
+  }
+
+  // If user is already authenticated, they'll be redirected by the hook
+  if (user) {
+    return null
+  }
+
   return (
     <PageTransition>
       <div className="relative min-h-screen w-screen">
@@ -116,7 +136,7 @@ export default function AuthPage() {
           <div className="w-full max-w-md px-6 sm:px-8 py-8">
             <div className="flex items-center mb-3">
               <img src={logo} alt="Logo" className="h-8 sm:h-10" />
-              <span className="text-2xl sm:text-3xl font-bold ml-2" style={{ color: '#367AFF' }}>HD</span>
+              <span className="text-2xl sm:text-3xl font-bold ml-2 text-black">HD</span>
             </div>
             <p className="text-gray-600 mb-6 text-sm sm:text-base">{isLogin ? 'Login' : 'Create your account'}</p>
 

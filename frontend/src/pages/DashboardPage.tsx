@@ -6,27 +6,27 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import Layout from '../components/Layout'
 import PageTransition from '../components/PageTransition'
 import Card from '../components/Card'
+import { useAuth } from '../hooks/useAuth'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 type Note = { _id: string; content: string }
-type User = { name: string; email: string; verified?: boolean }
 
 export default function DashboardPage() {
+  const { user, loading: authLoading } = useAuth(true) // Require authentication
   const [notes, setNotes] = useState<Note[]>([])
   const [content, setContent] = useState('')
   const [error, setError] = useState('')
-  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [creatingNote, setCreatingNote] = useState(false)
   const [deletingNotes, setDeletingNotes] = useState<Set<string>>(new Set())
 
   const load = async () => {
+    if (!user) return
+    
     setLoading(true)
     try {
-      const u = await axios.get(`${API}/auth/me`, { withCredentials: true })
-      setUser(u.data.user)
-      if (!u.data.user?.verified) {
+      if (!user.verified) {
         setError('You need to verify your account before accessing the dashboard.')
         return
       }
@@ -39,7 +39,11 @@ export default function DashboardPage() {
     }
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { 
+    if (user && !authLoading) {
+      load() 
+    }
+  }, [user, authLoading])
 
   const onCreate = async () => {
     if (!content.trim()) return
@@ -71,7 +75,7 @@ export default function DashboardPage() {
     }
   }
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <Layout>
         <PageTransition>
@@ -84,6 +88,10 @@ export default function DashboardPage() {
         </PageTransition>
       </Layout>
     )
+  }
+
+  if (!user) {
+    return null // Will be redirected by the auth hook
   }
 
   return (
