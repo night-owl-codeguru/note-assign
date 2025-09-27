@@ -5,6 +5,7 @@ import side from '../../assets/side.png'
 import logo from '../../assets/logo.png'
 import LoadingButton from '../components/LoadingButton'
 import LoadingSpinner from '../components/LoadingSpinner'
+import PageTransition from '../components/PageTransition'
 
 const API = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
@@ -97,78 +98,81 @@ export default function AuthPage() {
   }, [keep])
 
   return (
-    <div className="min-h-screen w-screen relative">
-      {/* Left side image - fixed to viewport height on large screens */}
-  <div className="hidden lg:block fixed top-0 left-0 h-[100vh] w-[50vw] bg-primary/5 overflow-hidden rounded-none">
-        <img
-          src={side}
-          alt="side"
-          className="absolute inset-0 h-full w-full object-cover rounded-none"
-          style={{ objectPosition: 'left bottom' }}
-        />
-      </div>
+    <PageTransition>
+      <div className="relative min-h-screen w-screen">
+        {/* Decorative side visual on large screens (no header on this page) */}
+        <div className="hidden lg:block fixed top-0 left-0 h-screen w-[44vw] bg-primary/5 overflow-hidden">
+          <img
+            src={side}
+            alt="side"
+            className="absolute inset-0 h-full w-full object-cover"
+            style={{ objectPosition: 'left bottom' }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/60" />
+        </div>
 
-      {/* Content area - on large screens shift right to make room for the fixed side */}
-      <div className="flex min-h-screen items-center justify-center lg:ml-[50%]">
-        <div className="w-full max-w-md">
-          <div className="flex items-center mb-2">
-            <img src={logo} alt="Logo" className="h-10" />
-            <span className="text-3xl font-bold ml-2" style={{ color: '#367AFF' }}>HD</span>
-          </div>
-          <p className="text-gray-600 mb-6">{isLogin ? 'Login' : 'Create your account'}</p>
-
-          {!isLogin && (
-            <div className="grid gap-3 mb-3">
-              <input className="input" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
-              <input className="input" type="date" placeholder="Date of birth" value={dob} onChange={(e) => setDob(e.target.value)} />
+        {/* Content */}
+        <div className="relative flex min-h-screen items-center justify-center lg:ml-[44vw]">
+          <div className="w-full max-w-md px-4 py-8">
+            <div className="flex items-center mb-2">
+              <img src={logo} alt="Logo" className="h-10" />
+              <span className="text-3xl font-bold ml-2" style={{ color: '#367AFF' }}>HD</span>
             </div>
-          )}
+            <p className="text-gray-600 mb-6">{isLogin ? 'Login' : 'Create your account'}</p>
 
-          <div className="grid gap-3">
-            <input className="input" placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            {!isLogin && (
+              <div className="grid gap-3 mb-3">
+                <input className="input" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} />
+                <input className="input" type="date" placeholder="Date of birth" value={dob} onChange={(e) => setDob(e.target.value)} />
+              </div>
+            )}
 
-            <div className="flex items-center gap-3 flex-wrap">
-              <LoadingButton onClick={onRequestOtp} loading={loadingOtp}>
-                Get OTP
-              </LoadingButton>
-              <div className="relative">
-                <div ref={googleDivRef} className={loadingGoogle ? 'opacity-50 pointer-events-none' : ''}></div>
-                {loadingGoogle && (
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <LoadingSpinner size="sm" color="primary" />
-                  </div>
+            <div className="grid gap-3">
+              <input className="input" placeholder="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+
+              <div className="flex items-center gap-3 flex-wrap">
+                <LoadingButton onClick={onRequestOtp} loading={loadingOtp}>
+                  Get OTP
+                </LoadingButton>
+                <div className="relative">
+                  <div ref={googleDivRef} className={loadingGoogle ? 'opacity-50 pointer-events-none' : ''}></div>
+                  {loadingGoogle && (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <LoadingSpinner size="sm" color="primary" />
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <AnimatePresence>
+                {otpRequested && (
+                  <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+                    <div className="mt-2 grid gap-2">
+                      <input className="input" placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} />
+                      <label className="inline-flex items-center gap-2 text-sm text-gray-600">
+                        <input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} /> Keep me signed in
+                      </label>
+                      <LoadingButton onClick={onVerifyOtp} loading={loadingVerify}>
+                        {isLogin ? 'Login' : 'Sign up'}
+                      </LoadingButton>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {error && <div className="text-red-600 text-sm">{error}</div>}
+
+              <div className="text-sm text-gray-600">
+                {isLogin ? (
+                  <>New here? <button className="text-primary" onClick={() => { setIsLogin(false); setOtp(''); setOtpRequested(false); }}>Create an account</button></>
+                ) : (
+                  <>Already have an account? <button className="text-primary" onClick={() => { setIsLogin(true); setOtp(''); setOtpRequested(false); }}>Login</button></>
                 )}
               </div>
-            </div>
-
-            <AnimatePresence>
-              {otpRequested && (
-                <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-                  <div className="mt-2 grid gap-2">
-                    <input className="input" placeholder="Enter OTP" value={otp} onChange={(e) => setOtp(e.target.value)} />
-                    <label className="inline-flex items-center gap-2 text-sm text-gray-600">
-                      <input type="checkbox" checked={keep} onChange={(e) => setKeep(e.target.checked)} /> Keep me signed in
-                    </label>
-                    <LoadingButton onClick={onVerifyOtp} loading={loadingVerify}>
-                      {isLogin ? 'Login' : 'Sign up'}
-                    </LoadingButton>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-
-            {error && <div className="text-red-600 text-sm">{error}</div>}
-
-            <div className="text-sm text-gray-600">
-              {isLogin ? (
-                <>New here? <button className="text-primary" onClick={() => { setIsLogin(false); setOtp(''); setOtpRequested(false); }}>Create an account</button></>
-              ) : (
-                <>Already have an account? <button className="text-primary" onClick={() => { setIsLogin(true); setOtp(''); setOtpRequested(false); }}>Login</button></>
-              )}
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </PageTransition>
   )
 }

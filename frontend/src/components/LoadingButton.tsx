@@ -1,4 +1,5 @@
 import { ReactNode } from 'react'
+import { motion } from 'framer-motion'
 import LoadingSpinner from './LoadingSpinner'
 
 interface LoadingButtonProps {
@@ -20,7 +21,7 @@ export default function LoadingButton({
   variant = 'primary',
   size = 'md'
 }: LoadingButtonProps) {
-  const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-all duration-200'
+  const baseClasses = 'inline-flex items-center justify-center rounded-md font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 ring-offset-2 ring-offset-white'
   
   const variantClasses = {
     primary: 'bg-primary text-white hover:brightness-95 disabled:bg-primary/60',
@@ -37,13 +38,16 @@ export default function LoadingButton({
   const isDisabled = disabled || loading
 
   return (
-    <button
+    <motion.button
+      type="button"
       onClick={onClick}
       disabled={isDisabled}
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className} ${isDisabled ? 'cursor-not-allowed' : ''}`}
+      whileTap={isDisabled ? undefined : { scale: 0.98 }}
+      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${className} ${isDisabled ? 'cursor-not-allowed disabled:pointer-events-none' : ''} ${variant === 'primary' ? 'shadow-sm hover:shadow' : ''} ${variant === 'primary' ? 'focus-visible:ring-primary/50' : 'focus-visible:ring-gray-300'}`}
+      aria-busy={loading}
     >
       {loading && <LoadingSpinner size={size === 'lg' ? 'md' : 'sm'} />}
       <span className={loading ? 'opacity-70' : ''}>{children}</span>
-    </button>
+    </motion.button>
   )
 }
