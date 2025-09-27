@@ -62,7 +62,12 @@ router.post('/request-otp', zValidator('json', z.object({
 
   try {
     if (MAILERSEND_API_KEY) {
-      await fetch('https://api.mailersend.com/v1/email', {
+      if (!MAIL_FROM_EMAIL || !MAIL_FROM_EMAIL.includes('@')) {
+        console.error('MAIL_FROM_EMAIL must be a full email address at a verified/test domain. Current value:', MAIL_FROM_EMAIL);
+        return c.json({ error: 'Email sender not configured. Please contact support.' }, 500);
+      }
+
+      const resp = await fetch('https://api.mailersend.com/v1/email', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${MAILERSEND_API_KEY}`,
@@ -76,10 +81,24 @@ router.post('/request-otp', zValidator('json', z.object({
           html: `<p>Your OTP is: <b>${code}</b></p><p>Valid for 5 minutes.</p>`,
         }),
       });
+
+      if (!resp.ok) {
+        let details: any = null;
+        try {
+          details = await resp.json();
+        } catch {
+          try { details = await resp.text(); } catch {}
+        }
+        console.error('MailerSend send failed', { status: resp.status, details });
+        return c.json({ error: 'Failed to send OTP email', providerStatus: resp.status, providerDetails: details }, 502);
+      }
+
+      const messageId = resp.headers.get('x-message-id') || undefined;
+      return c.json({ ok: true, messageId });
     } else {
       console.warn('MAILERSEND_API_KEY not set; skipping email, logging OTP:', code);
     }
-    return c.json({ ok: true });
+    return c.json({ ok: true, note: 'Email not sent in dev, OTP logged on server.' });
   } catch (e) {
     console.error('Failed to send OTP', e);
     return c.json({ error: 'Failed to send OTP' }, 500);
