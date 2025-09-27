@@ -7,13 +7,11 @@ export default function Layout({ children }: { children: ReactNode }) {
   const { user, logout, loggingOut } = useAuth()
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-b from-white to-gray-50">
-      <header className="fixed top-0 left-0 right-0 z-50 px-4 pt-4">
+      <header className="fixed top-0 left-0 right-0 z-50">
         <div className="mx-auto w-full max-w-6xl">
-          <div className="relative rounded-2xl overflow-hidden">
-            {/* Glassmorphic background */}
-            <div className="absolute inset-0 bg-white/30 supports-[backdrop-filter]:bg-white/20 backdrop-blur-xl border border-white/40 shadow-lg shadow-black/5" />
-            {/* Subtle gradient overlay */}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-transparent via-primary/8 to-transparent" />
+          <div className="relative">
+            {/* Simple background */}
+            <div className="absolute inset-0 bg-white border-b border-gray-200" />
             {/* Content */}
             <div className="relative px-6 py-4">
               <div className="flex items-center justify-between">
@@ -58,7 +56,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         </div>
       </header>
       {/* Add top padding to account for floating header */}
-      <div className="pt-20">
+      <div className="pt-16">
         <main className="flex-1">
           {children}
         </main>

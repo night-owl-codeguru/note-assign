@@ -119,20 +119,20 @@ export default function AuthPage() {
 
   return (
     <PageTransition>
+      {/* Decorative side visual on large screens (covers exact half) */}
+      <div className="hidden lg:block fixed top-0 left-0 h-screen w-1/2 bg-primary/5 z-10">
+        <img
+          src={side}
+          alt="side"
+          className="inset-0 h-full w-full object-cover"
+          style={{ objectPosition: 'left bottom' }}
+        />
+      </div>
+
       <div className="relative min-h-screen w-screen">
-        {/* Decorative side visual on large screens (no header on this page) */}
-        <div className="hidden lg:block fixed top-0 left-0 h-screen w-[42vw] bg-primary/5 overflow-hidden">
-          <img
-            src={side}
-            alt="side"
-            className="absolute inset-0 h-full w-full object-cover"
-            style={{ objectPosition: 'left bottom' }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-white/0 to-white/60" />
-        </div>
 
         {/* Content */}
-        <div className="relative flex min-h-screen items-center justify-center lg:ml-[42vw]">
+        <div className="relative flex min-h-screen items-center justify-center lg:ml-[50%]">
           <div className="w-full max-w-md px-6 sm:px-8 py-8">
             <div className="flex items-center mb-3">
               <img src={logo} alt="Logo" className="h-8 sm:h-10" />
